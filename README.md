@@ -294,18 +294,23 @@ This project provided practical experience with:
 * 📅 Calendar Integrations
 
 ---
+## 👨‍💻 Developer
 
-## 👨‍💻 Author
-
-### Nanda Kumar
+Nanda Kumar
 
 Software Engineer | Full-Stack Developer
 
 GitHub: https://github.com/user-Gyrus
 
-LinkedIn: YOUR_LINKEDIN_LINK
+LinkedIn: https://www.linkedin.com/in/nanda-kumar-balaji-483a38255/
 
-Portfolio: YOUR_PORTFOLIO_LINK
+Portfolio: https://my-portfolio-2204.netlify.app/
+
+---
+
+## 🎨 Design Credits
+
+UI/UX design and product ideation created in collaboration with Bala Hari Krishna.
 
 ---
 
