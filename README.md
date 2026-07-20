@@ -1,107 +1,317 @@
-# Atomiq v2 🚀
-**"Don't Break the Chain"**
+# ⚛️ Atomiq
 
 Atomiq is a premium, gamified habit tracker designed to help you build and sustain positive habits through social accountability and powerful visualization. Built as a Progressive Web App (PWA), it offers a native-app-like experience across all your devices.
 
-## 🔥 Key Features
+![React](https://img.shields.io/badge/React-61DAFB?logo=react\&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript\&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?logo=node.js\&logoColor=white)
+![Express](https://img.shields.io/badge/Express.js-000000?logo=express)
+![MongoDB](https://img.shields.io/badge/MongoDB-47A248?logo=mongodb\&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?logo=jsonwebtokens)
+![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?logo=tailwindcss\&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?logo=framer)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
-### 1. Habit Management
-*   **Flexible Tracking:** Create daily habits with custom schedules (specific days of the week).
-*   **Duration Challenges:** Set habits for specific durations (e.g., "21 Days to Break", "66 Days to Build").
-*   **Micro-Habits:** Breakdown large goals into small, actionable "micro-identities".
-*   **Visual History:** View your completion history with calendar-like tick marks.
+---
 
-### 2. Gamification & Streaks
-*   **Streak System:** Keep your fire burning! Visual streak counters and animations reward consistency.
-*   **Achievements:** Unlock badges and milestones (e.g., "Streak Ignited") as you progress.
-*   **Levels:** Gain XP for every completion and level up your profile.
+## 📖 Overview
 
-### 3. Social Squads 🤝
-*   **Build Together:** Create or join "Squads" to track habits with friends.
-*   **Invite System:** Easily invite friends via unique friend codes or direct share links.
-*   **Leaderboards:** See who's carrying the boats and who's slacking off.
-*   **Accountability:** Social pressure done right.
+Atomiq is a full-stack Progressive Web Application (PWA) designed to help users build lasting habits through consistency, accountability, and progress tracking.
 
-### 4. Premium Experience
-*   **PWA Support:** Install directly to your home screen. Works offline and feels like a native app.
-*   **Beautiful UI:** Glassmorphism design, smooth `Framer Motion` animations, and a polished dark/light mode.
-*   **Mental Models:** Daily rotating motivational quotes to keep your mindset sharp.
+The platform combines habit management, streak systems, social accountability, and gamification to make personal growth engaging and sustainable.
+
+Whether you're trying to build a new habit, break a bad one, or stay accountable with friends, Atomiq provides the tools to stay on track.
+
+---
+
+## ✨ Key Features
+
+### 📋 Habit Management
+
+* Create and manage custom habits
+* Daily and weekly scheduling
+* Duration-based challenges
+* Micro-habit support
+* Completion history tracking
+
+### 🔥 Streak System
+
+* Visual streak counters
+* Progress tracking
+* Streak recovery logic
+* Consistency monitoring
+* Daily completion indicators
+
+### 🏆 Gamification
+
+* XP-based progression
+* Achievement badges
+* Milestone rewards
+* Habit completion incentives
+
+### 🤝 Social Squads
+
+* Create or join accountability groups
+* Friend invite system
+* Shared progress tracking
+* Community-driven motivation
+
+### 📱 Progressive Web App
+
+* Installable on mobile and desktop
+* Offline support
+* Fast loading experience
+* Native-app-like interface
+
+### 🎨 Modern User Experience
+
+* Responsive design
+* Dark/Light themes
+* Smooth animations
+* Glassmorphism-inspired UI
+* Mobile-first experience
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TD
+
+    User[👤 User]
+
+    User --> Frontend[⚛️ React + TypeScript PWA]
+
+    Frontend --> Auth[🔐 Authentication Layer]
+
+    Auth --> Google[Google OAuth]
+    Auth --> JWT[JWT Tokens]
+
+    Frontend --> API[🚀 Express REST API]
+
+    API --> Habits[📋 Habit Management]
+    API --> Streaks[🔥 Streak Engine]
+    API --> Squads[🤝 Squad System]
+    API --> Achievements[🏆 Achievement Engine]
+
+    Habits --> DB[(🍃 MongoDB Atlas)]
+    Streaks --> DB
+    Squads --> DB
+    Achievements --> DB
+
+    Frontend --> Storage[(💾 Local Storage)]
+```
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-*   **Framework:** React (TypeScript) + Vite
-*   **Styling:** TailwindCSS + CSS Variables (Theming)
-*   **Animations:** Framer Motion
-*   **Icons:** Lucide React
-*   **PWA:** Vite Plugin PWA
-*   **State Management:** React Context + Local Storage (Session)
+
+* React
+* TypeScript
+* Vite
+* Tailwind CSS
+* Framer Motion
+* Lucide React
 
 ### Backend
-*   **Runtime:** Node.js + Express
-*   **Database:** MongoDB Atlas (Mongoose)
-*   **Authentication:** Passport.js (Google OAuth 2.0 + Local Strategy) & JWT
-*   **Security:** CORS, Bcrypt (Password Hashing)
+
+* Node.js
+* Express.js
+
+### Database
+
+* MongoDB Atlas
+* Mongoose
+
+### Authentication
+
+* JWT Authentication
+* Passport.js
+* Google OAuth 2.0
+
+### Additional Technologies
+
+* Progressive Web App (PWA)
+* Local Storage
+* REST APIs
+* Responsive Design
+
+---
+
+## 📂 Project Structure
+
+```text
+Atomiq
+│
+├── public/
+│
+├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── contexts/
+│   ├── hooks/
+│   ├── services/
+│   └── assets/
+│
+├── server/
+│   ├── routes/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── config/
+│   └── utils/
+│
+├── screenshots/
+│
+├── README.md
+├── package.json
+└── vite.config.ts
+```
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-*   Node.js (v16+)
-*   MongoDB (Local or Atlas)
 
-### 1. Installation
-Clone the repository and install dependencies for both frontend and backend.
+* Node.js (v16 or later)
+* MongoDB Atlas or Local MongoDB Instance
+
+### Installation
+
+Clone the repository:
 
 ```bash
-# Install Root (Frontend) Dependencies
-npm install
+git clone https://github.com/user-Gyrus/Atomiq.git
+```
 
-# Install Server Dependencies
+Install frontend dependencies:
+
+```bash
+npm install
+```
+
+Install backend dependencies:
+
+```bash
 cd server
 npm install
 ```
 
-### 2. Environment Configuration
-Create a `.env` file in the `server/` directory with the following variables:
+---
+
+## ⚙️ Environment Configuration
+
+Create a `.env` file inside the `server/` directory:
 
 ```env
 NODE_ENV=development
 PORT=5000
-DATABASE_URL=mongodb://localhost:27017/habit-tracker # Or your Atlas URL
-JWT_SECRET=your_super_secret_key
-SESSION_SECRET=another_secret_key
+
+DATABASE_URL=your_mongodb_connection_string
+
+JWT_SECRET=your_jwt_secret
+
+SESSION_SECRET=your_session_secret
+
 CLIENT_URL=http://localhost:5173
 
-# Google OAuth (Optional for local testing if using email auth)
 GOOGLE_CLIENT_ID=your_google_client_id
+
 GOOGLE_CLIENT_SECRET=your_google_client_secret
+
 GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
 ```
 
-### 3. Running the App
-You can run both the frontend and backend with a single command from the **root directory**:
+---
+
+## ▶️ Running the Application
+
+Start frontend and backend concurrently:
 
 ```bash
-# Runs Frontend (Vite) and Backend (Nodemon) concurrently
 npm run dev
 ```
 
-*   **Frontend:** `http://localhost:5173`
-*   **Backend:** `http://localhost:5000`
+Application URLs:
+
+Frontend:
+
+```text
+http://localhost:5173
+```
+
+Backend:
+
+```text
+http://localhost:5000
+```
 
 ---
 
 ## 📱 PWA Installation
-1.  Open the app in Chrome/Safari on your mobile device.
-2.  Tap "Share" (iOS) or the Menu (Android).
-3.  Select **"Add to Home Screen"**.
-4.  Launch Atomiq as a standalone app!
+
+### Android
+
+1. Open Atomiq in Chrome
+2. Tap Menu
+3. Select "Add to Home Screen"
+
+### iOS
+
+1. Open Atomiq in Safari
+2. Tap Share
+3. Select "Add to Home Screen"
 
 ---
 
-## 🤝 Contributing
-Built with ❤️ by the Atomiq Team
+## 🎯 Learning Outcomes
+
+This project provided practical experience with:
+
+* Full-Stack Application Development
+* REST API Design
+* JWT Authentication
+* OAuth Integration
+* MongoDB Data Modeling
+* Progressive Web Applications
+* Responsive UI Design
+* Deployment & Production Workflows
+
+---
+
+## 🚀 Future Roadmap
+
+* 🔔 Smart Habit Reminders
+* 📈 Advanced Analytics Dashboard
+* 🏆 Expanded Achievement System
+* 🤖 AI-Based Habit Recommendations
+* 📊 Weekly Progress Reports
+* 👥 Enhanced Social Features
+* 📅 Calendar Integrations
+
+---
+## 👨‍💻 Developer
+
+Nanda Kumar
+
+Software Engineer | Full-Stack Developer
+
+GitHub: https://github.com/user-Gyrus
+
+LinkedIn: https://www.linkedin.com/in/nanda-kumar-balaji-483a38255/
+
+Portfolio: https://my-portfolio-2204.netlify.app/
+
+---
+
+## 🎨 Design Credits
+
+UI/UX design and product ideation created in collaboration with Bala Hari Krishna.
+
+---
+
+⭐ If you found this project interesting, consider giving it a star.
