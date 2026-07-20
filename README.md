@@ -1,6 +1,6 @@
 # ⚛️ Atomiq
 
-### Build Better Habits. Stay Consistent. Track Progress.
+Atomiq is a premium, gamified habit tracker designed to help you build and sustain positive habits through social accountability and powerful visualization. Built as a Progressive Web App (PWA), it offers a native-app-like experience across all your devices.
 
 ![React](https://img.shields.io/badge/React-61DAFB?logo=react\&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript\&logoColor=white)
