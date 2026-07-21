@@ -3,11 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
-import { Flame, Menu } from "lucide-react";
-import {
-  AchievementProvider,
-  useAchievement,
-} from "./context/AchievementContext";
+import { Menu } from "lucide-react";
+import { AchievementProvider } from "./context/AchievementContext";
 import api from "../lib/api";
 
 import { HabitsScreen } from "./components/HabitsScreen";
@@ -19,12 +16,11 @@ import { CreateGroupScreen } from "./components/CreateGroupScreen";
 import { GroupDetailsScreen } from "./components/GroupDetailsScreen";
 import { InviteFriendScreen } from "./components/InviteFriendScreen";
 import { BottomNav } from "./components/BottomNav";
-import { OnboardingScreen } from "./components/OnboardingScreen";
-import { LoginScreen } from "./components/LoginScreen";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import UpdateNotification from "./components/UpdateNotification";
 import { HabitsScreenSkeleton } from "./components/LoadingSkeletons";
 import { PrivacyPolicyScreen } from "./components/PrivacyPolicyScreen";
+import { AuthGate, STORAGE_KEY_SESSION } from "./components/AuthGate";
 
 type Screen =
   | "habits"
@@ -57,8 +53,6 @@ interface Habit {
   completionsCount: number;
 }
 
-const STORAGE_KEY_SESSION = "habit-tracker-session";
-
 export default function App() {
   return (
     <AchievementProvider>
@@ -68,249 +62,50 @@ export default function App() {
 }
 
 function AppContent() {
-  const [session, setSession] = useState<any>(null);
-  const { showAchievement } = useAchievement();
-  const [authLoading, setAuthLoading] = useState<boolean>(true);
-  const [showProfileModal, setShowProfileModal] = useState(false); // New state for global modal
-  const [viewingPrivacy, setViewingPrivacy] = useState(false); // For unauthenticated access
-
   const [currentScreen, setCurrentScreen] = useState<Screen>("habits");
+
+  return (
+    <AuthGate onJoinGroupSuccess={() => setCurrentScreen("groups")}>
+      {({ session, updateSession }) => (
+        <MainLayout
+          session={session}
+          updateSession={updateSession}
+          currentScreen={currentScreen}
+          setCurrentScreen={setCurrentScreen}
+        />
+      )}
+    </AuthGate>
+  );
+}
+
+interface MainLayoutProps {
+  session: any;
+  updateSession: (user: any) => void;
+  currentScreen: Screen;
+  setCurrentScreen: (screen: Screen) => void;
+}
+
+function MainLayout({
+  session,
+  updateSession,
+  currentScreen,
+  setCurrentScreen,
+}: MainLayoutProps) {
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [habits, setHabits] = useState<Habit[]>([]);
   const [habitsLoading, setHabitsLoading] = useState<boolean>(false);
-  const [creationDefaults, setCreationDefaults] = useState<any>(null); // New state to pass context (e.g. squadId)
+  const [creationDefaults, setCreationDefaults] = useState<any>(null);
+  const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
 
   // Navigation Helper
   const handleNavigate = (screen: Screen, data?: any) => {
-      if (screen === 'create' && data) {
-          setCreationDefaults(data);
-      } else {
-          setCreationDefaults(null);
-      }
-      setCurrentScreen(screen);
-  };
-
-  /* ---------------------------
-     INVITE CODE HANDLING
-  ---------------------------- */
-  // 1. Check URL for invite code on mount (save to storage)
-  useEffect(() => {
-    const path = window.location.pathname;
-
-    // Check for Friend Invite
-    const inviteMatch = path.match(/^\/invite\/([a-zA-Z0-9-]+)$/);
-    if (inviteMatch && inviteMatch[1]) {
-      const code = inviteMatch[1];
-      console.log("🔗 Invite link detected:", code);
-      localStorage.setItem("pendingInviteCode", code);
-      window.history.replaceState({}, document.title, "/");
+    if (screen === "create" && data) {
+      setCreationDefaults(data);
+    } else {
+      setCreationDefaults(null);
     }
-
-    // Check for Group Join
-    const joinMatch = path.match(/^\/join\/([a-zA-Z0-9-]+)$/);
-    if (joinMatch && joinMatch[1]) {
-      const code = joinMatch[1];
-      console.log("🔗 Group Join link detected:", code);
-      localStorage.setItem("pendingGroupCode", code);
-      window.history.replaceState({}, document.title, "/");
-    }
-  }, []);
-
-  // 2. Process Pending Invite (if logged in)
-  const processPendingInvite = async (userToken: string) => {
-    const pendingCode = localStorage.getItem("pendingInviteCode");
-    if (!pendingCode) return;
-
-    console.log("🤝 Processing pending invite:", pendingCode);
-
-    try {
-      // A. Search for friend by code
-      const searchRes = await api.get(`/friends/search?code=${pendingCode}`, {
-        headers: { Authorization: `Bearer ${userToken}` },
-      });
-      const friendData = searchRes.data;
-
-      if (friendData && friendData._id) {
-        // B. Add Friend
-        await api.post(
-          "/friends/add",
-          { friendId: friendData._id },
-          {
-            headers: { Authorization: `Bearer ${userToken}` },
-          },
-        );
-        toast.success(
-          `You are now connected with ${friendData.displayName || "your friend"}! 🤝`,
-        );
-        localStorage.removeItem("pendingInviteCode");
-      }
-    } catch (err: any) {
-      console.error("Failed to process invite:", err);
-      const msg =
-        err.response?.data?.message || "Could not process invite link";
-
-      // Always clear the pending invite code to prevent infinite retry loop
-      localStorage.removeItem("pendingInviteCode");
-
-      // Show error toast (except for "already friends" case which is not really an error)
-      if (msg !== "User is already your friend") {
-        toast.error(msg);
-      }
-    }
-  };
-
-  // 3. Process Pending GROUP Invite (if logged in)
-  const processPendingGroupInvite = async (userToken: string) => {
-    const pendingCode = localStorage.getItem("pendingGroupCode");
-    if (!pendingCode) return;
-
-    console.log("🤝 Processing pending GROUP invite:", pendingCode);
-
-    try {
-      // Join Group by Code
-      await api.post(
-        "/groups/join",
-        { groupCode: pendingCode },
-        {
-          headers: { Authorization: `Bearer ${userToken}` },
-        },
-      );
-
-      toast.success("Successfully joined the squad! 🎉");
-      localStorage.removeItem("pendingGroupCode");
-
-      // Navigate to groups screen to see it
-      if (currentScreen !== "groups") {
-        setCurrentScreen("groups");
-      }
-    } catch (err: any) {
-      console.error("Failed to process group invite:", err);
-      const msg = err.response?.data?.message || "Could not join squad";
-
-      localStorage.removeItem("pendingGroupCode");
-
-      if (msg !== "You are already a member of this squad") {
-        toast.error(msg);
-      } else {
-        toast.info("You are already in this squad");
-        if (currentScreen !== "groups") {
-          setCurrentScreen("groups");
-        }
-      }
-    }
-  };
-
-  /* ---------------------------
-     AUTH SESSION (LOCAL STORAGE)
-  ---------------------------- */
-  const [onboardingComplete, setOnboardingComplete] = useState<boolean>(false);
-
-  useEffect(() => {
-    // Check for existing session
-    const storedSession = localStorage.getItem(STORAGE_KEY_SESSION);
-    if (storedSession) {
-      const parsedSession = JSON.parse(storedSession);
-      setSession(parsedSession);
-
-      // FETCH FRESH DATA (including verified streak)
-      if (parsedSession.token) {
-        api
-          .get("/auth/me")
-          .then((res) => {
-            // Merge with existing session (preserve token)
-            const newSession = { ...parsedSession, ...res.data };
-            setSession(newSession);
-            localStorage.setItem(
-              STORAGE_KEY_SESSION,
-              JSON.stringify(newSession),
-            );
-
-            // Trigger invite checks
-            processPendingInvite(parsedSession.token);
-            processPendingGroupInvite(parsedSession.token);
-          })
-          .catch((err) => console.error("Session refresh failed", err));
-      }
-    }
-
-    // Check onboarding status
-    const hasOnboarded = localStorage.getItem("HAS_COMPLETED_ONBOARDING");
-    if (hasOnboarded === "true") {
-      setOnboardingComplete(true);
-    }
-
-    setAuthLoading(false);
-  }, []);
-
-  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
-
-  const handleOnboardingComplete = (target: "login" | "signup") => {
-    localStorage.setItem("HAS_COMPLETED_ONBOARDING", "true");
-    setAuthMode(target);
-    setOnboardingComplete(true);
-  };
-
-  const handleLogin = (user: any) => {
-    setSession(user);
-    localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(user));
-
-    // Check for pending invite immediately after login
-    if (user.token) {
-      processPendingInvite(user.token);
-      processPendingGroupInvite(user.token);
-    }
-  };
-
-  const updateSession = (updatedUser: any) => {
-    // Check for streak change
-    if (session?.streak !== undefined && updatedUser.streak !== undefined) {
-      const oldStreak = session.streak;
-      const newStreak = updatedUser.streak;
-
-      if (newStreak > oldStreak) {
-        if (oldStreak === 0 && newStreak >= 1) {
-          // FIRST STREAK SPECIAL ACHIEVEMENT (CENTERED)
-          showAchievement({
-            title: "Streak Ignited!",
-            description:
-              "You've successfully started your habit streak. Keep the fire burning!",
-            type: "streak",
-            icon: (
-              <Flame className="w-12 h-12 text-orange-500 fill-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.8)] animate-pulse" />
-            ),
-          });
-        } else {
-          // NORMAL STREAK TOAST
-          toast.success(`${newStreak} Day Streak!`, {
-            description: "Another day, another victory.",
-            icon: <Flame className="w-5 h-5 text-orange-500" />,
-          });
-        }
-      }
-    }
-
-    // Check for streak freeze earned
-    if (
-      updatedUser.streakFreezes !== undefined
-    ) {
-      const oldFreezes = session?.streakFreezes || 0;
-      const newFreezes = updatedUser.streakFreezes;
-
-      if (newFreezes > oldFreezes) {
-        const freezesEarned = newFreezes - oldFreezes;
-        // BIG ACHIEVEMENT POPUP FOR STREAK FREEZE
-        showAchievement({
-          title: "Streak Freeze Earned! ❄️",
-          description: `You've earned ${freezesEarned} Streak Freeze${freezesEarned > 1 ? "s" : ""}! Use it to protect your streak on tough days.`,
-          type: "freeze",
-          icon: <div className="text-6xl animate-pulse">❄️</div>,
-        });
-      }
-    }
-
-    const newSession = { ...session, ...updatedUser };
-    setSession(newSession);
-    localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(newSession));
+    setCurrentScreen(screen);
   };
 
   /* ---------------------------
@@ -324,32 +119,27 @@ function AppContent() {
         setHabitsLoading(true);
         const res = await api.get("/habits");
         const allHabits: Habit[] = res.data;
-        // FIX: Use local date parts to avoid UTC shift problems
+
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, "0");
         const day = String(now.getDate()).padStart(2, "0");
         const today = `${year}-${month}-${day}`;
 
-        // Filter by Active Days (1=Mon ... 7=Sun)
-        const currentDayIndex = now.getDay(); // 0 (Sun) to 6 (Sat)
+        const currentDayIndex = now.getDay();
         const todayNum = currentDayIndex === 0 ? 7 : currentDayIndex;
 
-                const todaysHabits = allHabits.filter((h) => {
-          // 1. Duration Check - Based on COMPLETIONS, not calendar days
+        const todaysHabits = allHabits.filter((h) => {
           if (h.duration) {
             const completionCount = h.completions ? h.completions.length : 0;
-            // If habit has been completed >= duration times, it's finished
             if (completionCount >= h.duration) return false;
           }
-
-          // 2. Active Day Check
           return h.activeDays && h.activeDays.includes(todayNum);
         });
 
         const normalized: Habit[] = todaysHabits.map((h) => ({
-          ...h, // Keep original fields
-          id: h._id, // Add UI friendly id
+          ...h,
+          id: h._id,
           micro_identity: h.microIdentity,
           completed_today: h.completions.includes(today),
           completionsCount: h.completions.length,
@@ -364,37 +154,29 @@ function AppContent() {
     };
 
     loadHabits();
-  }, [session, currentScreen]); // Reload when screen changes (e.g. back from create)
+  }, [session, currentScreen]);
 
   /* ---------------------------
      RELOAD SESSION (for profile updates)
   ---------------------------- */
   useEffect(() => {
-    // Reload session from localStorage when switching screens
-    // This ensures profile changes (like display_name) are reflected
     const storedSession = localStorage.getItem(STORAGE_KEY_SESSION);
     if (storedSession) {
-      const parsedSession = JSON.parse(storedSession);
-      // Only update if changed (avoid infinite loop)
-      if (JSON.stringify(parsedSession) !== JSON.stringify(session)) {
-        setSession(parsedSession);
+      try {
+        const parsedSession = JSON.parse(storedSession);
+        if (JSON.stringify(parsedSession) !== JSON.stringify(session)) {
+          updateSession(parsedSession);
+        }
+      } catch (e) {
+        console.error("Error parsing stored session", e);
       }
     }
-  }, [currentScreen]); // Reload when screen changes
+  }, [currentScreen]);
 
   /* ---------------------------
-     CREATE / UPDATE HABIT
+     EDIT HABIT
   ---------------------------- */
-  const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
-
   const handleEditHabit = async (id: string) => {
-    // Find full habit data (including activeDays, etc) which might not be in UIHabit fully?
-    // actually UIHabit is missing activeDays, type, visibility.
-    // So fetch specific habit or find in full list if we kept it.
-    // We didn't keep full list in state, only UIHabit.
-    // Let's fetch it or store full habits.
-    // Better: Fetch single habit or just get all again.
-    // Since we don't have get-single-habit endpoint ready/verified, let's just GET /habits again and find it.
     try {
       const res = await api.get("/habits");
       const all: Habit[] = res.data;
@@ -409,26 +191,25 @@ function AppContent() {
     }
   };
 
+  /* ---------------------------
+     CREATE / UPDATE HABIT
+  ---------------------------- */
   const handleCreateOrUpdateHabit = async (habitData: any): Promise<void> => {
     try {
       let res;
-      // Check if we're editing based on _id presence OR editingHabit state
       const isEditing = habitData._id || editingHabit;
       const habitId = habitData._id || editingHabit?._id;
-      
+
       if (isEditing && habitId) {
-        // UPDATE
         res = await api.put(`/habits/${habitId}`, habitData);
         toast.success("Habit updated successfully!");
       } else {
-        // CREATE
         res = await api.post("/habits", habitData);
         toast.success("Habit created successfully!");
       }
 
       const data = res.data;
 
-      // Update session streak and lastCompletedDate if returned
       if (data.streak !== undefined && session) {
         const updatedSession = {
           ...session,
@@ -444,12 +225,14 @@ function AppContent() {
         updateSession(updatedSession);
       }
 
-      setEditingHabit(null); // Clear edit mode
-      setCreationDefaults(null); // Clear creation defaults
+      setEditingHabit(null);
+      setCreationDefaults(null);
       setCurrentScreen("habits");
     } catch (err) {
       toast.error(
-        habitData._id || editingHabit ? "Error updating habit" : "Error creating habit",
+        habitData._id || editingHabit
+          ? "Error updating habit"
+          : "Error creating habit",
       );
       console.error("Error saving habit", err);
     }
@@ -459,15 +242,12 @@ function AppContent() {
      COMPLETE HABIT (TODAY)
   ---------------------------- */
   const handleCompleteHabit = async (habitId: string): Promise<void> => {
-    // FIX: Use local date parts to avoid UTC shift problems (toISOString uses UTC)
-    // This aligns better with "Today" for the user's device time
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
     const today = `${year}-${month}-${day}`;
 
-    // Optimistic update
     setHabits((prev) =>
       prev.map((h) =>
         h._id === habitId
@@ -492,7 +272,6 @@ function AppContent() {
         });
         const data = updateRes.data;
 
-        // Update session streak and lastCompletedDate if returned
         if (data.streak !== undefined && session) {
           const updatedSession = {
             ...session,
@@ -511,8 +290,6 @@ function AppContent() {
       }
     } catch (err) {
       console.error("Failed to complete habit", err);
-      // Revert optimistic update?
-      // For now, ignore.
     }
   };
 
@@ -520,15 +297,12 @@ function AppContent() {
      UNDO HABIT (TODAY)
   ---------------------------- */
   const handleUndoHabit = async (habitId: string): Promise<void> => {
-    // FIX: Use local date parts to avoid UTC shift problems (toISOString uses UTC)
-    // Same logic as complete
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
     const today = `${year}-${month}-${day}`;
 
-    // Optimistic update
     setHabits((prev) =>
       prev.map((h) =>
         h._id === habitId
@@ -555,7 +329,6 @@ function AppContent() {
         });
         const data = updateRes.data;
 
-        // Update session streak and lastCompletedDate if returned
         if (data.streak !== undefined && session) {
           const updatedSession = {
             ...session,
@@ -574,7 +347,6 @@ function AppContent() {
       }
     } catch (err) {
       console.error("Failed to undo habit", err);
-      // We could revert the optimistic update here if needed.
       toast.error("Failed to undo habit");
     }
   };
@@ -589,7 +361,6 @@ function AppContent() {
 
       setHabits((prev) => prev.filter((h) => h._id !== habitId));
       toast.success("Habit deleted");
-      // Update session streak if returned and changed
       if (data.streak !== undefined && session) {
         updateSession({
           ...session,
@@ -608,33 +379,6 @@ function AppContent() {
       console.error("Failed to delete habit", err);
     }
   };
-
-  /* ---------------------------
-     AUTH GATE
-  ---------------------------- */
-  if (authLoading) {
-    return (
-      <div className="min-h-screen grid place-items-center text-white">
-        Loading…
-      </div>
-    );
-  }
-
-  if (!session) {
-    if (!onboardingComplete) {
-      return <OnboardingScreen onComplete={handleOnboardingComplete} />;
-    }
-    if (viewingPrivacy) {
-      return <PrivacyPolicyScreen onBack={() => setViewingPrivacy(false)} />;
-    }
-    return (
-      <LoginScreen
-        onLogin={handleLogin}
-        initialMode={authMode}
-        onViewPrivacyPolicy={() => setViewingPrivacy(true)}
-      />
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[var(--bg-gradient-start)] to-[var(--bg-gradient-end)] text-foreground overflow-x-hidden transition-colors duration-500">
@@ -667,7 +411,6 @@ function AppContent() {
         <main
           className={`flex-1 pb-20 overflow-y-auto ${currentScreen === "habits" ? "pt-24" : ""}`}
         >
-          {/* Changed from pt-36 to pt-24 to reduce gap below fixed header */}
           <AnimatePresence mode="wait">
             {currentScreen === "habits" && (
               <motion.div
