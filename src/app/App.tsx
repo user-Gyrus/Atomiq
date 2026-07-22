@@ -7,8 +7,8 @@ import { Menu } from "lucide-react";
 import { AchievementProvider } from "./context/AchievementContext";
 import api from "../lib/api";
 
-import { HabitsScreen } from "./components/HabitsScreen";
-import { CreateHabitScreen } from "./components/CreateHabitScreen";
+import { HabitsScreen } from "./components/habits/HabitsScreen";
+import { CreateHabitScreen } from "./components/habits/CreateHabitScreen";
 import { ProfileScreen } from "./components/ProfileScreen";
 import { SocialScreen } from "./components/SocialScreen";
 import { GroupsScreen } from "./components/squads/GroupsScreen";

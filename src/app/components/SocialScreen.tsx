@@ -5,7 +5,7 @@ import * as Switch from "@radix-ui/react-switch";
 import { toast } from "sonner";
 import api from "../../lib/api";
 import { FriendsListSkeleton, GroupsCarouselSkeleton } from "./LoadingSkeletons";
-import { FriendHabitsModal } from "./FriendHabitsModal";
+import { FriendHabitsModal } from "./habits/FriendHabitsModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -65,8 +65,6 @@ interface Notification {
         count?: number;
         date: string;
     };
-    read: boolean;
-    createdAt: string;
     read: boolean;
     createdAt: string;
 }

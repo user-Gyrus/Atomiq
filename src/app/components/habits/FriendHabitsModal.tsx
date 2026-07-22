@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Check, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import api from "../../lib/api";
+import api from "../../../lib/api";
 
 interface Friend {
   id: string;
