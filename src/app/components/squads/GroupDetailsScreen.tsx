@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, MoreHorizontal, ChevronRight, UserPlus, LogOut, X, Copy, Share2, MessageCircle, Trash2, Users, Check, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
-import api from "../../lib/api";
+import api from "../../../lib/api";
 
 // ... (types and interfaces remain the same)
 type Screen = "habits" | "create" | "profile" | "social" | "groups" | "create-group" | "group-details" | "invite-friend" | "privacy-policy";

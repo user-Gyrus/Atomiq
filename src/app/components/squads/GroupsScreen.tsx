@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Plus, Ticket, Trophy, X } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "motion/react";
-import api from "../../lib/api";
-import { SquadsListSkeleton } from "./LoadingSkeletons";
+import api from "../../../lib/api";
+import { SquadsListSkeleton } from "../LoadingSkeletons";
 
 type Screen = "habits" | "create" | "profile" | "social" | "groups" | "create-group" | "group-details" | "invite-friend" | "privacy-policy";
 
