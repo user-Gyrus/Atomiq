@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, Users, Calendar, Rocket, Search, Check } from "lucide-react";
 import { motion } from "motion/react";
-import api from "../../lib/api";
+import api from "../../../lib/api";
 
 interface CreateGroupScreenProps {
   onNavigate: (screen: "habits" | "create" | "profile" | "social" | "groups" | "create-group" | "group-details" | "invite-friend") => void;
